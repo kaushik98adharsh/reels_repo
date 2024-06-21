@@ -13,9 +13,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       try {
         // Simulate a login process
         await Future.delayed(const Duration(seconds: 2));
-        
-        // If login is successful
+        if(event.username == "username" && event.password == "password") {
+          // If login is successful
         emit(const LoginState.success());
+        }
+        else{
+          emit(const LoginState.failure(error: "Invalid UserName or Password"));
+        }
       } catch (error) {
         // If login fails
         emit(LoginState.failure(error: error.toString()));

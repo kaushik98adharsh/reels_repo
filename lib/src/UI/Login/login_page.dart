@@ -15,13 +15,57 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController userController =TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool obscurePass = true;
+
+
+void _showMyDialog(BuildContext context, String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Invalid Password'),
+        content:  SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+            Text(message)
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Approve'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child:const  Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         body: BlocConsumer<LoginBloc, LoginState>(
           listener: (context, state) {
-
+              if(state is LoginFailure)
+              {
+                _showMyDialog(context,state.error);
+              }
+              if(state is LoginSuccess){
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Login Success',  
+                    textAlign: TextAlign.center,)));
+                  Navigator.pushNamed(context, '/reels');
+              }
           },
           builder: (context, state) {
             return Form(
@@ -83,17 +127,13 @@ class _LoginPageState extends State<LoginPage> {
                                     const Icon(Icons.remove_red_eye)
                                     :const Icon(Icons.panorama_fish_eye),),
                                     labelText: "Password",
-                                    border: OutlineInputBorder()),
+                                    border: const OutlineInputBorder()),
                               )),
                           Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
                                   onPressed: () {
-                                    context.read<LoginBloc>().add(
-                                      EventLogin(
-                                        username: userController.text , 
-                                        password: passwordController
-                                        .text));
+                                   
                                   },
                                   child: const Text("forgot password?"))),
                           const SizedBox(
@@ -104,7 +144,13 @@ class _LoginPageState extends State<LoginPage> {
                                 backgroundColor: WidgetStateColor.resolveWith(
                                     (_) => Colors.blue[900]!),
                               ), //
-                              onPressed: () {},
+                              onPressed: () {
+                                 context.read<LoginBloc>().add(
+                                      EventLogin(
+                                        username: userController.text , 
+                                        password: passwordController
+                                        .text));
+                              },
                               child: const Text("Submit"))
                         ],
                       ),
@@ -112,7 +158,14 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   Visibility(
                     visible: state is LoginLoading,
-                    child: Container(color: const Color.fromARGB(200, 0, 0, 0),))
+                    child: Container(
+                      color: const Color.fromARGB(200, 0, 0, 0),
+                      child: const Center(
+                        child:Card(
+                          child:Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: CircularProgressIndicator(),
+                          ))),))
                 ],
               ),
             );
